@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2f6f4f">
+<title>活動記録</title>
+<style>
+  :root {
+    --fg: #1c2b23;
+    --bg: #f4f7f2;
+    --card: #ffffff;
+    --accent: #2f6f4f;
+    --accent-dark: #235539;
+    --border: #c7d2c9;
+    --danger: #b3402a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--fg);
+    background: var(--bg);
+  }
+
+  header {
+    position: relative;
+    background: var(--accent);
+    color: #fff;
+    padding: 18px 16px;
+    text-align: center;
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 26px;
+  }
+
+  .settings-btn {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .settings-btn:active {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 16px;
+    margin-bottom: 18px;
+  }
+
+  .field {
+    margin-bottom: 22px;
+  }
+
+  .field:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    font-weight: 700;
+    font-size: 21px;
+    margin-bottom: 8px;
+  }
+
+  .hint {
+    font-weight: 400;
+    font-size: 17px;
+    color: #55655b;
+  }
+
+  input[type="date"],
+  input[type="text"],
+  input[type="number"],
+  textarea {
+    width: 100%;
+    font-size: 21px;
+    font-family: inherit;
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--fg);
+  }
+
+  textarea {
+    min-height: 90px;
+    resize: vertical;
+  }
+
+  input:focus,
+  textarea:focus {
+    outline: 3px solid #9ec6ac;
+    border-color: var(--accent);
+  }
+
+  /* 数値ステッパー */
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .stepper button {
+    width: 64px;
+    height: 64px;
+    font-size: 34px;
+    line-height: 1;
+    border: 2px solid var(--accent);
+    background: #eaf3ee;
+    color: var(--accent-dark);
+    border-radius: 12px;
+    font-weight: 700;
+  }
+
+  .stepper .value {
+    flex: 1;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    padding: 10px 0;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    min-width: 70px;
+  }
+
+  .bp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bp-row input {
+    text-align: center;
+  }
+
+  .bp-row .sep {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .bp-row .unit {
+    font-size: 19px;
+    white-space: nowrap;
+  }
+
+  button {
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .save-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 20px;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  .save-btn:active {
+    background: var(--accent-dark);
+  }
+
+  .msg {
+    text-align: center;
+    font-size: 19px;
+    color: var(--accent-dark);
+    min-height: 28px;
+    margin-top: 10px;
+  }
+
+  h2.list-title {
+    font-size: 22px;
+    margin: 26px 0 12px;
+  }
+
+  .record {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .record .date {
+    font-size: 21px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .record dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 14px;
+  }
+
+  .record dt {
+    font-weight: 700;
+    color: #3c4d43;
+  }
+
+  .record dd {
+    margin: 0;
+    word-break: break-word;
+  }
+
+  .record .free {
+    grid-column: 1 / -1;
+    margin-top: 6px;
+  }
+
+  .del-btn {
+    margin-top: 14px;
+    width: 100%;
+    background: #fff;
+    color: var(--danger);
+    border: 2px solid var(--danger);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .empty {
+    text-align: center;
+    color: #55655b;
+    padding: 20px;
+  }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 10px 14px;
+    margin-bottom: 14px;
+  }
+
+  .chart-card h3 {
+    margin: 0 0 6px;
+    font-size: 19px;
+    text-align: center;
+  }
+
+  .chart-box {
+    position: relative;
+    height: 190px;
+    width: 100%;
+  }
+
+  .chart-note {
+    text-align: center;
+    color: #55655b;
+    font-size: 16px;
+    padding: 24px 10px;
+  }
+
+  .export-btn {
+    width: 100%;
+    background: #fff;
+    color: var(--accent-dark);
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  .export-btn:active {
+    background: #eaf3ee;
+  }
+
+  .io-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .io-buttons .export-btn {
+    width: auto;
+    flex: 1 1 200px;
+  }
+
+  .msg.error {
+    color: var(--danger);
+  }
+
+  .period-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .period-btn {
+    flex: 1 1 auto;
+    min-width: 70px;
+    background: #fff;
+    color: var(--accent-dark);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 6px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .period-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* ===== 設定モーダル ===== */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+  }
+
+  .modal-overlay.hidden {
+    display: none;
+  }
+
+  .modal-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px 18px;
+    max-width: 460px;
+    width: 100%;
+  }
+
+  .modal-card h2 {
+    margin: 0 0 16px;
+    font-size: 22px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .modal-actions button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .modal-save {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+  }
+
+  .modal-close {
+    background: #fff;
+    border: 2px solid var(--border);
+    color: var(--fg);
+  }
+
+  /* ===== AIひとことコメント（吹き出し） ===== */
+  .ai-comment {
+    position: relative;
+    margin-top: 16px;
+    background: #eaf3ee;
+    border: 2px solid var(--accent);
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 18px;
+    color: var(--fg);
+    white-space: pre-line;
+  }
+
+  .ai-comment.hidden {
+    display: none;
+  }
+
+  .ai-comment::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 30px;
+    border-width: 0 11px 11px 11px;
+    border-style: solid;
+    border-color: transparent transparent var(--accent) transparent;
+  }
+
+  .ai-comment::after {
+    content: "";
+    position: absolute;
+    top: -9px;
+    left: 33px;
+    border-width: 0 8px 8px 8px;
+    border-style: solid;
+    border-color: transparent transparent #eaf3ee transparent;
+  }
+
+  .ai-comment.loading {
+    color: #55655b;
+    font-style: italic;
+  }
+
+  .ai-comment.error {
+    background: #fdecea;
+    border-color: var(--danger);
+    color: var(--danger);
+    font-style: normal;
+  }
+
+  .ai-comment.error::before {
+    border-color: transparent transparent var(--danger) transparent;
+  }
+
+  .ai-comment.error::after {
+    border-color: transparent transparent #fdecea transparent;
+  }
+
+  .ai-retry-btn {
+    display: block;
+    margin-top: 10px;
+    background: #fff;
+    color: var(--danger);
+    border: 2px solid var(--danger);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .ai-retry-btn:active {
+    background: #fdecea;
+  }
+
+  /* ===== 連続記録日数（ストリーク） ===== */
+  .streak-banner {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-dark);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 18px;
+  }
+
+  .streak-banner.zero {
+    color: #55655b;
+  }
+
+  /* ===== 前回の記録との比較 ===== */
+  .prev-compare {
+    margin-top: 16px;
+    background: #eef5f0;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .prev-compare.hidden {
+    display: none;
+  }
+
+  .prev-compare-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--fg);
+  }
+
+  .prev-compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .cmp-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px 6px;
+  }
+
+  .cmp-label {
+    font-size: 16px;
+    color: #3c4d43;
+    font-weight: 700;
+  }
+
+  .cmp-value {
+    font-size: 19px;
+    font-weight: 700;
+  }
+
+  .cmp-value.cmp-up {
+    color: var(--accent-dark);
+  }
+
+  .cmp-value.cmp-down {
+    color: #b5651d;
+  }
+
+  .cmp-value.cmp-same {
+    color: #55655b;
+  }
+
+  /* ===== 週平均サマリー ===== */
+  .week-summary {
+    margin-bottom: 14px;
+  }
+
+  .week-summary-note {
+    text-align: center;
+    color: #55655b;
+    font-size: 17px;
+    padding: 10px;
+  }
+
+  .week-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 17px;
+  }
+
+  .week-summary-table th,
+  .week-summary-table td {
+    text-align: center;
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .week-summary-table th {
+    font-size: 16px;
+    color: #3c4d43;
+  }
+
+  .week-summary-table td:first-child,
+  .week-summary-table th:first-child {
+    text-align: left;
+    font-weight: 700;
+  }
+
+  .week-summary-table tr:last-child th,
+  .week-summary-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .week-summary-table .value {
+    font-size: 20px;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>活動記録</h1>
+  <button type="button" id="settings-btn" class="settings-btn" aria-label="設定">⚙️</button>
+</header>
+
+<main>
+  <div class="streak-banner" id="streak-banner"></div>
+
+  <form id="record-form" class="card" autocomplete="off">
+    <div class="field">
+      <label for="date">日付</label>
+      <input type="date" id="date" name="date" required>
+    </div>
+
+    <div class="field">
+      <label>調子 <span class="hint">(0:悪い 〜 10:良い)</span></label>
+      <div class="stepper" data-min="0" data-max="10">
+        <button type="button" class="minus" aria-label="減らす">−</button>
+        <span class="value" id="condition-val">5</span>
+        <button type="button" class="plus" aria-label="増やす">＋</button>
+        <input type="hidden" id="condition" value="5">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>睡眠 <span class="hint">(0:眠れなかった 〜 5:よく眠れた)</span></label>
+      <div class="stepper" data-min="0" data-max="5">
+        <button type="button" class="minus" aria-label="減らす">−</button>
+        <span class="value" id="sleep-val">3</span>
+        <button type="button" class="plus" aria-label="増やす">＋</button>
+        <input type="hidden" id="sleep" value="3">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>活動量 <span class="hint">(0:少ない 〜 10:多い(過剰))</span></label>
+      <div class="stepper" data-min="0" data-max="10">
+        <button type="button" class="minus" aria-label="減らす">−</button>
+        <span class="value" id="activity-val">5</span>
+        <button type="button" class="plus" aria-label="増やす">＋</button>
+        <input type="hidden" id="activity" value="5">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>便通 <span class="hint">(0:便秘気味 〜 5:下痢気味)</span></label>
+      <div class="stepper" data-min="0" data-max="5">
+        <button type="button" class="minus" aria-label="減らす">−</button>
+        <span class="value" id="bowel-val">2</span>
+        <button type="button" class="plus" aria-label="増やす">＋</button>
+        <input type="hidden" id="bowel" value="2">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="positive">ポジティブ一行 <span class="hint">(よかったこと)</span></label>
+      <input type="text" id="positive" name="positive" maxlength="120" placeholder="例: 庭の花が咲いた">
+    </div>
+
+    <div class="field">
+      <label for="exercise">運動</label>
+      <input type="text" id="exercise" name="exercise" maxlength="120" placeholder="例: 散歩 20分">
+    </div>
+
+    <div class="field">
+      <label>血圧 <span class="hint">(mm)</span></label>
+      <div class="bp-row">
+        <input type="number" id="bp-high" inputmode="numeric" min="0" max="300" placeholder="上">
+        <span class="sep">/</span>
+        <input type="number" id="bp-low" inputmode="numeric" min="0" max="200" placeholder="下">
+        <span class="unit">mm</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="other">その他 / 環境</label>
+      <textarea id="other" name="other" maxlength="300" placeholder="例: 暑かった、来客あり"></textarea>
+    </div>
+
+    <button type="submit" class="save-btn">保存する</button>
+    <p class="msg" id="msg"></p>
+    <div class="prev-compare hidden" id="prev-compare"></div>
+    <div class="ai-comment hidden" id="ai-comment"></div>
+  </form>
+
+  <div class="card">
+    <div class="io-buttons">
+      <button type="button" id="export-csv-btn" class="export-btn">📄 データをエクスポート</button>
+      <button type="button" id="import-csv-btn" class="export-btn">📥 データをインポート</button>
+      <input type="file" id="import-csv-input" accept=".csv,text/csv" hidden>
+    </div>
+    <p class="msg" id="import-msg"></p>
+  </div>
+
+  <h2 class="list-title">これまでの推移</h2>
+  <div class="card week-summary" id="week-summary"></div>
+  <div class="period-switch" id="period-switch">
+    <button type="button" class="period-btn" data-period="1m">1ヶ月</button>
+    <button type="button" class="period-btn active" data-period="3m">3ヶ月</button>
+    <button type="button" class="period-btn" data-period="1y">1年</button>
+    <button type="button" class="period-btn" data-period="all">全期間</button>
+  </div>
+  <div id="chart-area"></div>
+
+  <h2 class="list-title">これまでの記録</h2>
+  <div id="record-list"></div>
+</main>
+
+<div class="modal-overlay hidden" id="settings-overlay">
+  <div class="modal-card">
+    <h2>⚙️ 設定</h2>
+    <div class="field">
+      <label for="gemini-key-input">Gemini APIキー</label>
+      <input type="text" id="gemini-key-input" placeholder="APIキーを貼り付け" autocomplete="off" spellcheck="false">
+      <p class="hint" style="margin-top:8px;">入力したキーはこの端末のブラウザ内(localStorage)にのみ保存されます。記録を保存した際、ひとことコメントの取得にGoogleのGemini APIへ直接送信されます。</p>
+    </div>
+    <p class="msg" id="settings-msg"></p>
+    <div class="modal-actions">
+      <button type="button" id="settings-close-btn" class="modal-close">閉じる</button>
+      <button type="button" id="settings-save-btn" class="modal-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  var STORAGE_KEY = "katsudo-kiroku-v1";
+  var WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+
+  function todayString() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+
+  function loadRecords() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveRecords(records) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  /* ===== 数値ステッパー ===== */
+  function setupSteppers() {
+    var steppers = document.querySelectorAll(".stepper");
+    steppers.forEach(function (s) {
+      var min = Number(s.getAttribute("data-min"));
+      var max = Number(s.getAttribute("data-max"));
+      var input = s.querySelector("input[type=hidden]");
+      var valEl = s.querySelector(".value");
+
+      function update(v) {
+        v = Math.max(min, Math.min(max, v));
+        input.value = v;
+        valEl.textContent = v;
+      }
+
+      s.querySelector(".minus").addEventListener("click", function () {
+        update(Number(input.value) - 1);
+      });
+      s.querySelector(".plus").addEventListener("click", function () {
+        update(Number(input.value) + 1);
+      });
+    });
+  }
+
+  function resetSteppers() {
+    var defaults = { condition: 5, sleep: 3, activity: 5, bowel: 2 };
+    Object.keys(defaults).forEach(function (id) {
+      var input = document.getElementById(id);
+      input.value = defaults[id];
+      document.getElementById(id + "-val").textContent = defaults[id];
+    });
+  }
+
+  /* ===== 一覧表示 ===== */
+  function formatDate(str) {
+    var parts = str.split("-");
+    if (parts.length !== 3) return str;
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    return Number(parts[1]) + "月" + Number(parts[2]) + "日 (" + WEEKDAYS[d.getDay()] + ")";
+  }
+
+  function escapeHtml(text) {
+    var div = document.createElement("div");
+    div.textContent = text == null ? "" : String(text);
+    return div.innerHTML;
+  }
+
+  function renderList() {
+    var list = document.getElementById("record-list");
+    var records = loadRecords();
+
+    if (records.length === 0) {
+      list.innerHTML = '<div class="empty">まだ記録がありません</div>';
+      return;
+    }
+
+    // 新しい順（日付 → 作成時刻）
+    records.sort(function (a, b) {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+
+    list.innerHTML = records.map(function (r) {
+      var bp = "";
+      if (r.bpHigh || r.bpLow) {
+        bp = escapeHtml(r.bpHigh || "?") + " / " + escapeHtml(r.bpLow || "?") + " mm";
+      }
+      var rows = "";
+      rows += '<dt>調子</dt><dd>' + escapeHtml(r.condition) + '</dd>';
+      rows += '<dt>睡眠</dt><dd>' + escapeHtml(r.sleep) + '</dd>';
+      rows += '<dt>活動量</dt><dd>' + escapeHtml(r.activity) + '</dd>';
+      rows += '<dt>便通</dt><dd>' + escapeHtml(r.bowel) + '</dd>';
+      if (bp) rows += '<dt>血圧</dt><dd>' + bp + '</dd>';
+      if (r.positive) rows += '<dd class="free">😊 ' + escapeHtml(r.positive) + '</dd>';
+      if (r.exercise) rows += '<dd class="free">🏃 ' + escapeHtml(r.exercise) + '</dd>';
+      if (r.other) rows += '<dd class="free">📝 ' + escapeHtml(r.other) + '</dd>';
+
+      return '' +
+        '<div class="record">' +
+          '<div class="date">' + escapeHtml(formatDate(r.date)) + '</div>' +
+          '<dl>' + rows + '</dl>' +
+          '<button type="button" class="del-btn" data-id="' + r.id + '">この記録を削除</button>' +
+        '</div>';
+    }).join("");
+
+    list.querySelectorAll(".del-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (!confirm("この記録を削除しますか？")) return;
+        var id = btn.getAttribute("data-id");
+        var remaining = loadRecords().filter(function (r) { return String(r.id) !== String(id); });
+        saveRecords(remaining);
+        renderList();
+        renderCharts();
+        renderStreak();
+        renderWeekSummary();
+      });
+    });
+  }
+
+  /* ===== CSVエクスポート ===== */
+  // エクスポート・インポート共通の列構成（内部フィールド名との対応順）
+  var CSV_HEADER = ["日付", "調子", "睡眠", "活動量", "便通", "ポジティブ一言", "運動", "血圧上", "血圧下", "その他"];
+  var CSV_FIELDS = ["date", "condition", "sleep", "activity", "bowel", "positive", "exercise", "bpHigh", "bpLow", "other"];
+
+  function csvField(v) {
+    var s = v === undefined || v === null ? "" : String(v);
+    if (/[",\r\n]/.test(s)) {
+      s = '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+  }
+
+  function buildCsv(records) {
+    var header = CSV_HEADER;
+    var sorted = records.slice().sort(function (a, b) {
+      if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+      return (a.createdAt || 0) - (b.createdAt || 0);
+    });
+
+    var lines = [header.map(csvField).join(",")];
+    sorted.forEach(function (r) {
+      var row = [
+        r.date, r.condition, r.sleep, r.activity, r.bowel,
+        r.positive, r.exercise, r.bpHigh, r.bpLow, r.other
+      ];
+      lines.push(row.map(csvField).join(","));
+    });
+    return lines.join("\r\n");
+  }
+
+  function exportCsv() {
+    var records = loadRecords();
+    if (records.length === 0) {
+      alert("エクスポートする記録がありません");
+      return;
+    }
+
+    var csv = buildCsv(records);
+    var blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "katsudo-kiroku_" + todayString() + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /* ===== CSVインポート ===== */
+  var importMsgTimer = null;
+
+  function showImportResult(state, text) {
+    var el = document.getElementById("import-msg");
+    el.classList.toggle("error", state === "error");
+    el.textContent = text;
+    if (importMsgTimer) clearTimeout(importMsgTimer);
+    importMsgTimer = setTimeout(function () {
+      el.textContent = "";
+      el.classList.remove("error");
+    }, 8000);
+  }
+
+  // RFC4180相当のCSVパーサー（ダブルクォート囲み・エスケープ・セル内改行に対応）
+  function parseCsv(text) {
+    var rows = [];
+    var row = [];
+    var field = "";
+    var inQuotes = false;
+    var i = 0;
+    var len = text.length;
+
+    while (i < len) {
+      var c = text.charAt(i);
+
+      if (inQuotes) {
+        if (c === '"') {
+          if (text.charAt(i + 1) === '"') {
+            field += '"';
+            i += 2;
+          } else {
+            inQuotes = false;
+            i++;
+          }
+        } else {
+          field += c;
+          i++;
+        }
+        continue;
+      }
+
+      if (c === '"') {
+        inQuotes = true;
+        i++;
+      } else if (c === ",") {
+        row.push(field);
+        field = "";
+        i++;
+      } else if (c === "\r" || c === "\n") {
+        if (c === "\r" && text.charAt(i + 1) === "\n") i++;
+        row.push(field);
+        field = "";
+        rows.push(row);
+        row = [];
+        i++;
+      } else {
+        field += c;
+        i++;
+      }
+    }
+
+    if (field !== "" || row.length > 0) {
+      row.push(field);
+      rows.push(row);
+    }
+
+    // 完全な空行を除外
+    return rows.filter(function (r) { return !(r.length === 1 && r[0].trim() === ""); });
+  }
+
+  function importCsvText(text) {
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // BOM除去
+
+    var rows;
+    try {
+      rows = parseCsv(text);
+    } catch (e) {
+      showImportResult("error", "CSVの読み込みに失敗しました。ファイルの内容を確認してください。");
+      return;
+    }
+
+    if (rows.length === 0) {
+      showImportResult("error", "CSVにデータが含まれていません。");
+      return;
+    }
+
+    var header = rows[0].map(function (c) { return String(c).trim(); });
+    var headerOk = header.length === CSV_HEADER.length &&
+      header.every(function (c, idx) { return c === CSV_HEADER[idx]; });
+
+    if (!headerOk) {
+      showImportResult("error",
+        "CSVの形式が正しくありません。1行目の項目名(" + CSV_HEADER.join(",") + ")を確認してください。");
+      return;
+    }
+
+    var dataRows = rows.slice(1);
+    var records = loadRecords();
+    var existingDates = {};
+    records.forEach(function (r) { existingDates[r.date] = true; });
+
+    var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+    var added = 0;
+    var duplicated = 0;
+    var invalid = 0;
+
+    dataRows.forEach(function (row, idx) {
+      if (row.length !== CSV_HEADER.length) {
+        invalid++;
+        return;
+      }
+
+      var date = String(row[0]).trim();
+      if (!DATE_RE.test(date)) {
+        invalid++;
+        return;
+      }
+
+      if (existingDates[date]) {
+        duplicated++;
+        return;
+      }
+
+      var record = {
+        id: Date.now() + "-imp" + idx + "-" + Math.random().toString(36).slice(2, 7),
+        createdAt: Date.now()
+      };
+      CSV_FIELDS.forEach(function (fieldName, colIdx) {
+        record[fieldName] = colIdx === 0 ? date : String(row[colIdx]).trim();
+      });
+
+      records.push(record);
+      existingDates[date] = true;
+      added++;
+    });
+
+    saveRecords(records);
+    renderList();
+    renderCharts();
+    renderStreak();
+    renderWeekSummary();
+
+    var message = added + "件読み込みました(重複" + duplicated + "件はスキップ)";
+    if (invalid > 0) message += "(形式不正で" + invalid + "件スキップ)";
+    showImportResult("done", message);
+  }
+
+  function handleCsvFile(file) {
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        importCsvText(String(e.target.result || ""));
+      } catch (err) {
+        showImportResult("error", "CSVの読み込み中にエラーが発生しました。ファイル形式を確認してください。");
+      }
+    };
+    reader.onerror = function () {
+      showImportResult("error", "ファイルの読み込みに失敗しました。");
+    };
+    reader.readAsText(file, "UTF-8");
+  }
+
+  function setupImport() {
+    var importBtn = document.getElementById("import-csv-btn");
+    var fileInput = document.getElementById("import-csv-input");
+
+    importBtn.addEventListener("click", function () {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", function (e) {
+      var file = e.target.files && e.target.files[0];
+      handleCsvFile(file);
+      e.target.value = ""; // 同じファイルを再選択しても change が発火するようにする
+    });
+  }
+
+  /* ===== Gemini APIキー設定 ===== */
+  var GEMINI_KEY_STORAGE = "katsudo-kiroku-gemini-key";
+  var GEMINI_MODEL_PRIMARY = "gemini-flash-latest";
+  var GEMINI_MODEL_FALLBACK = "gemini-flash-lite-latest"; // 最終手段
+
+  function loadGeminiKey() {
+    try {
+      return (localStorage.getItem(GEMINI_KEY_STORAGE) || "").trim();
+    } catch (e) {
+      return "";
+    }
+  }
+
+  function saveGeminiKey(key) {
+    try {
+      localStorage.setItem(GEMINI_KEY_STORAGE, key);
+    } catch (e) {
+      // localStorageが使えない環境では何もしない
+    }
+  }
+
+  function setupSettingsModal() {
+    var overlay = document.getElementById("settings-overlay");
+    var openBtn = document.getElementById("settings-btn");
+    var closeBtn = document.getElementById("settings-close-btn");
+    var saveBtn = document.getElementById("settings-save-btn");
+    var input = document.getElementById("gemini-key-input");
+    var msg = document.getElementById("settings-msg");
+
+    function open() {
+      input.value = loadGeminiKey();
+      msg.textContent = "";
+      overlay.classList.remove("hidden");
+    }
+
+    function close() {
+      overlay.classList.add("hidden");
+    }
+
+    openBtn.addEventListener("click", open);
+    closeBtn.addEventListener("click", close);
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) close();
+    });
+
+    saveBtn.addEventListener("click", function () {
+      saveGeminiKey(input.value.trim());
+      msg.textContent = "保存しました ✔";
+      setTimeout(close, 700);
+    });
+  }
+
+  /* ===== AIひとことコメント ===== */
+  function formatRecordDetail(r) {
+    var bp = (r.bpHigh || r.bpLow)
+      ? (r.bpHigh || "?") + " / " + (r.bpLow || "?") + " mm"
+      : "(記録なし)";
+    return [
+      "日付: " + r.date,
+      "調子: " + (r.condition || "") + " (0〜10)",
+      "睡眠: " + (r.sleep || "") + " (0〜5)",
+      "活動量: " + (r.activity || "") + " (0〜10)",
+      "便通: " + (r.bowel || "") + " (0〜5)",
+      "ポジティブ一言: " + (r.positive || "(記録なし)"),
+      "運動: " + (r.exercise || "(記録なし)"),
+      "血圧: " + bp,
+      "その他: " + (r.other || "(記録なし)")
+    ].join("\n");
+  }
+
+  function formatRecordOneLine(r) {
+    var line = shortDate(r.date) +
+      " 調子" + (r.condition || "?") +
+      " 睡眠" + (r.sleep || "?") +
+      " 活動" + (r.activity || "?") +
+      " 便通" + (r.bowel || "?");
+    if (r.positive) line += " ポジティブ:" + r.positive;
+    return line;
+  }
+
+  // 直近N日分（今日を含む）の記録を古い順で返す
+  function recentRecords(records, days) {
+    var cutoffDate = new Date();
+    cutoffDate.setHours(0, 0, 0, 0);
+    cutoffDate.setDate(cutoffDate.getDate() - (days - 1));
+    var cutoffStr = toDateString(cutoffDate);
+    return records
+      .filter(function (r) { return r.date >= cutoffStr; })
+      .sort(function (a, b) {
+        if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+        return (a.createdAt || 0) - (b.createdAt || 0);
+      });
+  }
+
+  function buildGeminiPrompt(record, recentLines) {
+    return [
+      "あなたは家族のように温かく見守るアシスタントです。労いと共感を中心に、優しくコメントしてください。",
+      "以下はある人が記録した、今日の健康・生活の記録です。この入力は夜、寝る前に行われています(この前提自体にコメントで触れる必要はありません)。",
+      "",
+      "【今日の記録】",
+      formatRecordDetail(record),
+      "",
+      "【直近の記録の推移（1行ずつ、古い順、今日を含む）】",
+      recentLines.length ? recentLines.join("\n") : "(今日が最初の記録です)",
+      "",
+      "今日の記録に対して、敬語(丁寧語)を使い、6〜8文程度で日本語のコメントをください。",
+      "数値をそのまま読み上げるのではなく、ポジティブ一言や運動の内容など今日の記録の具体的な内容に触れながら、自然な語りかけにしてください。",
+      "最後に、明日への一言を添えてください。",
+      "",
+      "以下は文体・長さ・構成(具体的な内容への言及→労い→明日への一言、という流れ)の参考例です。",
+      "同じ言い回しを毎回繰り返さないよう、実際の返答では例の文章をそのまま使わず、その日の記録内容に応じて言葉を自由に選んでください。",
+      "",
+      "【例1(調子が良い日)】",
+      "「記録をありがとうございます。調子も8とのことで、良い一日を過ごされたようですね。散歩を続けていらっしゃるとのことで、その積み重ねが体調の良さにつながっているのかもしれません。庭の花が咲いたお話も嬉しいですね。睡眠のリズムも整っているようなので、この調子で無理なく続けてください。明日も穏やかな一日になりますように。」",
+      "",
+      "【例2(調子がやや低めの日)】",
+      "「今日も記録をつけてくださってありがとうございます。調子が4とのことで、少し疲れが出ているのかもしれませんね。無理に頑張らず、ゆっくり休むことも大切です。それでも記録を続けてくださっていること自体、素晴らしいことだと思います。睡眠がしっかり取れると、また調子も上向いてくるかもしれません。明日は少し体を労わりながら過ごしてくださいね。」"
+    ].join("\n");
+  }
+
+  var GEMINI_TIMEOUT_PRIMARY_MS = 5000;   // 主モデル：これを超えたらタイムアウト扱い
+  var GEMINI_TIMEOUT_FALLBACK_MS = 15000; // 最終手段モデル：これを超えたらタイムアウト扱い
+
+  // 1回分のリクエスト（タイムアウト付き）
+  function callGeminiOnce(apiKey, prompt, model, timeoutMs) {
+    var url = "https://generativelanguage.googleapis.com/v1beta/models/" +
+      model + ":generateContent?key=" + encodeURIComponent(apiKey);
+
+    var controller = new AbortController();
+    var timer = setTimeout(function () { controller.abort(); }, timeoutMs);
+
+    return fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      }),
+      signal: controller.signal
+    }).then(function (res) {
+      if (!res.ok) {
+        return res.text().then(function (t) {
+          var err = new Error("HTTP " + res.status + (t ? ": " + t.slice(0, 200) : ""));
+          err.status = res.status;
+          throw err;
+        });
+      }
+      return res.json();
+    }).then(function (data) {
+      var text = data && data.candidates && data.candidates[0] &&
+        data.candidates[0].content && data.candidates[0].content.parts &&
+        data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
+      if (!text) throw new Error("応答が空でした");
+      return text.trim();
+    }).catch(function (err) {
+      if (err && err.name === "AbortError") {
+        var timeoutErr = new Error("タイムアウトしました");
+        timeoutErr.isTimeout = true;
+        throw timeoutErr;
+      }
+      throw err;
+    }).finally(function () {
+      clearTimeout(timer);
+    });
+  }
+
+  // まず主モデルへ。タイムアウト(5秒)またはエラー(503など)の場合は、
+  // 最終手段として即座に軽量モデルへ同じ内容で送り直す。表示上は両者を区別しない。
+  function callGemini(apiKey, prompt) {
+    return callGeminiOnce(apiKey, prompt, GEMINI_MODEL_PRIMARY, GEMINI_TIMEOUT_PRIMARY_MS).catch(function () {
+      return callGeminiOnce(apiKey, prompt, GEMINI_MODEL_FALLBACK, GEMINI_TIMEOUT_FALLBACK_MS);
+    });
+  }
+
+  // 直前にコメントを試みた記録。「もう一度試す」ボタンから、フォームの再入力なしに再送信するために保持する
+  var lastAiCommentRecord = null;
+
+  function setAiComment(state, text, showRetry) {
+    var el = document.getElementById("ai-comment");
+    el.classList.remove("hidden", "loading", "error");
+    if (state === "loading") el.classList.add("loading");
+    if (state === "error") el.classList.add("error");
+
+    el.innerHTML = "";
+    var textEl = document.createElement("div");
+    textEl.textContent = text;
+    el.appendChild(textEl);
+
+    if (showRetry) {
+      var retryBtn = document.createElement("button");
+      retryBtn.type = "button";
+      retryBtn.className = "ai-retry-btn";
+      retryBtn.textContent = "もう一度試す";
+      retryBtn.addEventListener("click", retryAiComment);
+      el.appendChild(retryBtn);
+    }
+  }
+
+  function requestAiComment(record) {
+    lastAiCommentRecord = record;
+
+    var apiKey = loadGeminiKey();
+    if (!apiKey) {
+      setAiComment("error", "⚙️ 設定からGemini APIキーを登録すると、記録にひとことコメントがもらえます", false);
+      return;
+    }
+
+    setAiComment("loading", "🤖 考え中...", false);
+
+    var recentLines = recentRecords(loadRecords(), 14).map(formatRecordOneLine);
+    var prompt = buildGeminiPrompt(record, recentLines);
+
+    callGemini(apiKey, prompt).then(function (text) {
+      setAiComment("done", "🤖 " + text, false);
+    }).catch(function (err) {
+      var message;
+      if (err && err.status === 503) {
+        message = "Geminiが混み合っているようです。少し時間をおいて記録を保存し直してみてください";
+      } else if (err && err.isTimeout) {
+        message = "Geminiからの応答がありませんでした(タイムアウト)。少し時間をおいて記録を保存し直してみてください";
+      } else {
+        message = "コメントの取得に失敗しました。APIキーや通信状況を確認してもう一度お試しください。";
+      }
+      setAiComment("error", message, true);
+    });
+  }
+
+  // 「もう一度試す」ボタン：フォームへの再入力なしに、直前に保存した記録で再送信する
+  function retryAiComment() {
+    if (!lastAiCommentRecord) return;
+    requestAiComment(lastAiCommentRecord);
+  }
+
+  /* ===== グラフ（これまでの推移） ===== */
+  var chartInstances = [];
+  var currentPeriod = "3m";
+  var LINE_CHARTS = [
+    { key: "condition", label: "調子", min: 0, max: 10, step: 2, color: "#2f6f4f" },
+    { key: "sleep", label: "睡眠", min: 0, max: 5, step: 1, color: "#3a6ea5" },
+    { key: "activity", label: "活動量", min: 0, max: 10, step: 2, color: "#b5651d" },
+    { key: "bowel", label: "便通", min: 0, max: 5, step: 1, color: "#8a5a83" }
+  ];
+
+  function shortDate(str) {
+    var p = str.split("-");
+    if (p.length !== 3) return str;
+    return Number(p[1]) + "/" + Number(p[2]);
+  }
+
+  function toNumberOrNull(v) {
+    if (v === undefined || v === null || String(v).trim() === "") return null;
+    var n = Number(v);
+    return isFinite(n) ? n : null;
+  }
+
+  function toDateString(d) {
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+
+  // 現在の期間設定に応じた「これ以降を表示」の下限日付文字列（"all" は null = 制限なし）
+  function periodCutoff(period) {
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    if (period === "1m") {
+      d.setMonth(d.getMonth() - 1);
+    } else if (period === "3m") {
+      d.setMonth(d.getMonth() - 3);
+    } else if (period === "1y") {
+      d.setFullYear(d.getFullYear() - 1);
+    } else {
+      return null;
+    }
+    return toDateString(d);
+  }
+
+  function destroyCharts() {
+    chartInstances.forEach(function (c) { c.destroy(); });
+    chartInstances = [];
+  }
+
+  function baseOptions(min, max, step, showLegend) {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: { display: !!showLegend, labels: { font: { size: 14 } } },
+        tooltip: { bodyFont: { size: 14 }, titleFont: { size: 13 } }
+      },
+      scales: {
+        y: {
+          min: min,
+          max: max,
+          ticks: { stepSize: step, font: { size: 13 } }
+        },
+        x: {
+          ticks: { font: { size: 12 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }
+        }
+      },
+      elements: { point: { radius: 3, hitRadius: 12 }, line: { tension: 0.3 } }
+    };
+  }
+
+  function makeCard(titleText) {
+    var card = document.createElement("div");
+    card.className = "chart-card";
+    var h3 = document.createElement("h3");
+    h3.textContent = titleText;
+    card.appendChild(h3);
+    return card;
+  }
+
+  function renderCharts() {
+    var area = document.getElementById("chart-area");
+    destroyCharts();
+    area.innerHTML = "";
+
+    var allRecords = loadRecords();
+
+    if (allRecords.length === 0) {
+      area.innerHTML = '<div class="empty">記録がたまるとグラフが表示されます</div>';
+      return;
+    }
+
+    if (typeof Chart === "undefined") {
+      area.innerHTML = '<div class="empty">グラフの読み込みに失敗しました。<br>インターネットに接続して開き直してください。</div>';
+      return;
+    }
+
+    // 古い順に並べる（推移として左→右で見やすく）
+    var records = allRecords.slice().sort(function (a, b) {
+      if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+      return (a.createdAt || 0) - (b.createdAt || 0);
+    });
+
+    // 選択中の表示期間で絞り込み
+    var cutoff = periodCutoff(currentPeriod);
+    if (cutoff) {
+      records = records.filter(function (r) { return r.date >= cutoff; });
+    }
+
+    if (records.length === 0) {
+      area.innerHTML = '<div class="empty">この期間の記録はありません</div>';
+      return;
+    }
+
+    var labels = records.map(function (r) { return shortDate(r.date); });
+
+    // 調子・睡眠・活動量・便通
+    LINE_CHARTS.forEach(function (def) {
+      var card = makeCard(def.label);
+      var box = document.createElement("div");
+      box.className = "chart-box";
+      var canvas = document.createElement("canvas");
+      box.appendChild(canvas);
+      card.appendChild(box);
+      area.appendChild(card);
+
+      var data = records.map(function (r) { return toNumberOrNull(r[def.key]); });
+
+      chartInstances.push(new Chart(canvas, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: def.label,
+            data: data,
+            borderColor: def.color,
+            backgroundColor: def.color,
+            borderWidth: 2,
+            spanGaps: true
+          }]
+        },
+        options: baseOptions(def.min, def.max, def.step, false)
+      }));
+    });
+
+    // 血圧（上・下の2本）
+    var bpCard = makeCard("血圧 (mm)");
+    var highData = records.map(function (r) { return toNumberOrNull(r.bpHigh); });
+    var lowData = records.map(function (r) { return toNumberOrNull(r.bpLow); });
+    var hasBp = highData.concat(lowData).some(function (v) { return v !== null; });
+
+    if (!hasBp) {
+      var note = document.createElement("div");
+      note.className = "chart-note";
+      note.textContent = "血圧の記録がまだありません";
+      bpCard.appendChild(note);
+      area.appendChild(bpCard);
+      return;
+    }
+
+    var bpBox = document.createElement("div");
+    bpBox.className = "chart-box";
+    var bpCanvas = document.createElement("canvas");
+    bpBox.appendChild(bpCanvas);
+    bpCard.appendChild(bpBox);
+    area.appendChild(bpCard);
+
+    chartInstances.push(new Chart(bpCanvas, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "上",
+            data: highData,
+            borderColor: "#b3402a",
+            backgroundColor: "#b3402a",
+            borderWidth: 2,
+            spanGaps: true
+          },
+          {
+            label: "下",
+            data: lowData,
+            borderColor: "#3a6ea5",
+            backgroundColor: "#3a6ea5",
+            borderWidth: 2,
+            spanGaps: true
+          }
+        ]
+      },
+      options: (function () {
+        var o = baseOptions(undefined, undefined, undefined, true);
+        o.scales.y.min = undefined;
+        o.scales.y.max = undefined;
+        o.scales.y.ticks = { font: { size: 13 } };
+        o.scales.y.beginAtZero = false;
+        return o;
+      })()
+    }));
+  }
+
+  /* ===== 連続記録日数（ストリーク） ===== */
+  function computeStreak(records) {
+    var dateSet = {};
+    records.forEach(function (r) { if (r.date) dateSet[r.date] = true; });
+
+    var cursor = new Date();
+    cursor.setHours(0, 0, 0, 0);
+    // 今日の記録がまだ無ければ、昨日を起点に数える（保存済みなら今日を起点に数える）
+    if (!dateSet[toDateString(cursor)]) {
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    var streak = 0;
+    while (dateSet[toDateString(cursor)]) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
+
+  function renderStreak() {
+    var el = document.getElementById("streak-banner");
+    var streak = computeStreak(loadRecords());
+
+    if (streak < 1) {
+      el.textContent = "今日から記録を始めましょう";
+      el.classList.add("zero");
+    } else {
+      el.textContent = "🔥 " + streak + "日連続で記録しています";
+      el.classList.remove("zero");
+    }
+  }
+
+  /* ===== 前回の記録との比較 ===== */
+  var COMPARE_FIELDS = [
+    { key: "condition", label: "調子" },
+    { key: "sleep", label: "睡眠" },
+    { key: "activity", label: "活動量" },
+    { key: "bowel", label: "便通" }
+  ];
+  var DIRECTION_TEXT = { up: "↑ 良くなった", down: "↓ 低め", same: "→ 変わらない" };
+
+  // 保存前の記録一覧の中から、直近の1件（＝今回保存する記録の「前回」）を返す
+  function findPreviousRecord(existingRecords) {
+    if (existingRecords.length === 0) return null;
+    var sorted = existingRecords.slice().sort(function (a, b) {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
+    return sorted[0];
+  }
+
+  function fieldDirection(currVal, prevVal) {
+    var c = toNumberOrNull(currVal);
+    var p = toNumberOrNull(prevVal);
+    if (c === null || p === null) return null;
+    if (c > p) return "up";
+    if (c < p) return "down";
+    return "same";
+  }
+
+  function renderPrevCompare(record, prevRecord) {
+    var el = document.getElementById("prev-compare");
+
+    if (!prevRecord) {
+      el.classList.add("hidden");
+      el.innerHTML = "";
+      return;
+    }
+
+    var items = COMPARE_FIELDS.map(function (f) {
+      var dir = fieldDirection(record[f.key], prevRecord[f.key]);
+      return dir ? { label: f.label, dir: dir } : null;
+    }).filter(function (x) { return x !== null; });
+
+    if (items.length === 0) {
+      el.classList.add("hidden");
+      el.innerHTML = "";
+      return;
+    }
+
+    var html = '<div class="prev-compare-title">前回の記録と比べて</div><div class="prev-compare-grid">';
+    items.forEach(function (item) {
+      html += '<div class="cmp-item"><span class="cmp-label">' + escapeHtml(item.label) + '</span>' +
+        '<span class="cmp-value cmp-' + item.dir + '">' + escapeHtml(DIRECTION_TEXT[item.dir]) + '</span></div>';
+    });
+    html += '</div>';
+
+    el.innerHTML = html;
+    el.classList.remove("hidden");
+  }
+
+  /* ===== 今週・先週の平均サマリー ===== */
+  function average(nums) {
+    if (nums.length === 0) return null;
+    var sum = nums.reduce(function (a, b) { return a + b; }, 0);
+    return sum / nums.length;
+  }
+
+  function formatAverage(v) {
+    if (v === null) return "-";
+    return (Math.round(v * 10) / 10).toString();
+  }
+
+  function renderWeekSummary() {
+    var el = document.getElementById("week-summary");
+    var records = loadRecords();
+
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    var thisWeekStart = new Date(today);
+    thisWeekStart.setDate(thisWeekStart.getDate() - 6); // 今日を含む直近7日間
+    var lastWeekStart = new Date(thisWeekStart);
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7); // その前の7日間
+    var lastWeekEnd = new Date(thisWeekStart);
+    lastWeekEnd.setDate(lastWeekEnd.getDate() - 1);
+
+    var thisWeekStartStr = toDateString(thisWeekStart);
+    var lastWeekStartStr = toDateString(lastWeekStart);
+    var lastWeekEndStr = toDateString(lastWeekEnd);
+
+    var thisWeekRecords = records.filter(function (r) { return r.date >= thisWeekStartStr; });
+    var lastWeekRecords = records.filter(function (r) { return r.date >= lastWeekStartStr && r.date <= lastWeekEndStr; });
+
+    if (thisWeekRecords.length === 0 && lastWeekRecords.length === 0) {
+      el.innerHTML = '<div class="week-summary-note">データが増えると表示されます</div>';
+      return;
+    }
+
+    var rows = COMPARE_FIELDS.map(function (f) {
+      var thisAvg = average(thisWeekRecords.map(function (r) { return toNumberOrNull(r[f.key]); }).filter(function (v) { return v !== null; }));
+      var lastAvg = average(lastWeekRecords.map(function (r) { return toNumberOrNull(r[f.key]); }).filter(function (v) { return v !== null; }));
+      return { label: f.label, thisAvg: thisAvg, lastAvg: lastAvg };
+    });
+
+    var html = '<table class="week-summary-table">' +
+      '<tr><th></th><th>今週の平均</th><th>先週の平均</th></tr>';
+    rows.forEach(function (r) {
+      html += '<tr><th>' + escapeHtml(r.label) + '</th>' +
+        '<td class="value">' + escapeHtml(formatAverage(r.thisAvg)) + '</td>' +
+        '<td class="value">' + escapeHtml(formatAverage(r.lastAvg)) + '</td></tr>';
+    });
+    html += '</table>';
+
+    el.innerHTML = html;
+  }
+
+  /* ===== 保存 ===== */
+  function handleSubmit(e) {
+    e.preventDefault();
+    var date = document.getElementById("date").value || todayString();
+
+    var record = {
+      id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
+      createdAt: Date.now(),
+      date: date,
+      condition: document.getElementById("condition").value,
+      sleep: document.getElementById("sleep").value,
+      activity: document.getElementById("activity").value,
+      bowel: document.getElementById("bowel").value,
+      positive: document.getElementById("positive").value.trim(),
+      exercise: document.getElementById("exercise").value.trim(),
+      bpHigh: document.getElementById("bp-high").value.trim(),
+      bpLow: document.getElementById("bp-low").value.trim(),
+      other: document.getElementById("other").value.trim()
+    };
+
+    var records = loadRecords();
+    var prevRecord = findPreviousRecord(records); // 保存前の時点での直近の記録
+    records.push(record);
+    saveRecords(records);
+
+    // フォームを次の入力用に整える
+    document.getElementById("positive").value = "";
+    document.getElementById("exercise").value = "";
+    document.getElementById("bp-high").value = "";
+    document.getElementById("bp-low").value = "";
+    document.getElementById("other").value = "";
+    resetSteppers();
+    document.getElementById("date").value = todayString();
+
+    var msg = document.getElementById("msg");
+    msg.textContent = "保存しました ✔";
+    setTimeout(function () { msg.textContent = ""; }, 3000);
+
+    renderPrevCompare(record, prevRecord);
+    requestAiComment(record);
+
+    renderList();
+    renderCharts();
+    renderStreak();
+    renderWeekSummary();
+    window.scrollTo({ top: document.querySelector(".list-title").offsetTop - 10, behavior: "smooth" });
+  }
+
+  /* ===== 期間切り替え ===== */
+  function setupPeriodSwitch() {
+    var buttons = document.querySelectorAll(".period-btn");
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (btn.classList.contains("active")) return;
+        buttons.forEach(function (b) { b.classList.remove("active"); });
+        btn.classList.add("active");
+        currentPeriod = btn.getAttribute("data-period");
+        renderCharts();
+      });
+    });
+  }
+
+  /* ===== 初期化 ===== */
+  document.getElementById("date").value = todayString();
+  setupSteppers();
+  setupPeriodSwitch();
+  setupSettingsModal();
+  document.getElementById("record-form").addEventListener("submit", handleSubmit);
+  document.getElementById("export-csv-btn").addEventListener("click", exportCsv);
+  setupImport();
+  renderList();
+  renderCharts();
+  renderStreak();
+  renderWeekSummary();
+</script>
+</body>
+</html>
