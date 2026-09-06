@@ -174,6 +174,16 @@
     white-space: nowrap;
   }
 
+  .bp-sub-label {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 10px 0 4px;
+  }
+
+  .bp-sub-label:first-child {
+    margin-top: 0;
+  }
+
   button {
     cursor: pointer;
     font-family: inherit;
@@ -662,6 +672,14 @@
 
     <div class="field">
       <label>血圧 <span class="hint">(mm)</span></label>
+      <div class="bp-sub-label">朝</div>
+      <div class="bp-row">
+        <input type="number" id="bp-morning-high" inputmode="numeric" min="0" max="300" placeholder="上">
+        <span class="sep">/</span>
+        <input type="number" id="bp-morning-low" inputmode="numeric" min="0" max="200" placeholder="下">
+        <span class="unit">mm</span>
+      </div>
+      <div class="bp-sub-label">寝る前</div>
       <div class="bp-row">
         <input type="number" id="bp-high" inputmode="numeric" min="0" max="300" placeholder="上">
         <span class="sep">/</span>
@@ -808,10 +826,14 @@
     });
 
     list.innerHTML = records.map(function (r) {
-      var bp = "";
-      if (r.bpHigh || r.bpLow) {
-        bp = escapeHtml(r.bpHigh || "?") + " / " + escapeHtml(r.bpLow || "?") + " mm";
+      var bpParts = [];
+      if (r.bpMorningHigh || r.bpMorningLow) {
+        bpParts.push("朝 " + escapeHtml(r.bpMorningHigh || "?") + " / " + escapeHtml(r.bpMorningLow || "?"));
       }
+      if (r.bpHigh || r.bpLow) {
+        bpParts.push("寝る前 " + escapeHtml(r.bpHigh || "?") + " / " + escapeHtml(r.bpLow || "?"));
+      }
+      var bp = bpParts.length ? bpParts.join(" ／ ") + " mm" : "";
       var rows = "";
       rows += '<dt>調子</dt><dd>' + escapeHtml(r.condition) + '</dd>';
       rows += '<dt>睡眠</dt><dd>' + escapeHtml(r.sleep) + '</dd>';
@@ -846,8 +868,10 @@
 
   /* ===== CSVエクスポート ===== */
   // エクスポート・インポート共通の列構成（内部フィールド名との対応順）
-  var CSV_HEADER = ["日付", "調子", "睡眠", "活動量", "便通", "ポジティブ一言", "運動", "血圧上", "血圧下", "その他"];
-  var CSV_FIELDS = ["date", "condition", "sleep", "activity", "bowel", "positive", "exercise", "bpHigh", "bpLow", "other"];
+  // 「血圧上/血圧下」は寝る前の値。朝の血圧列は後方互換のため末尾に追加した。
+  var CSV_HEADER = ["日付", "調子", "睡眠", "活動量", "便通", "ポジティブ一言", "運動", "血圧上", "血圧下", "その他", "朝血圧上", "朝血圧下"];
+  var CSV_FIELDS = ["date", "condition", "sleep", "activity", "bowel", "positive", "exercise", "bpHigh", "bpLow", "other", "bpMorningHigh", "bpMorningLow"];
+  var CSV_LEGACY_LEN = 10; // 朝血圧列が無い旧形式の列数
 
   function csvField(v) {
     var s = v === undefined || v === null ? "" : String(v);
@@ -868,7 +892,8 @@
     sorted.forEach(function (r) {
       var row = [
         r.date, r.condition, r.sleep, r.activity, r.bowel,
-        r.positive, r.exercise, r.bpHigh, r.bpLow, r.other
+        r.positive, r.exercise, r.bpHigh, r.bpLow, r.other,
+        r.bpMorningHigh, r.bpMorningLow
       ];
       lines.push(row.map(csvField).join(","));
     });
@@ -982,8 +1007,10 @@
     }
 
     var header = rows[0].map(function (c) { return String(c).trim(); });
-    var headerOk = header.length === CSV_HEADER.length &&
+    // 旧形式(朝血圧列なし)と新形式の両方を受け付ける。CSV_HEADER の先頭からの前方一致で判定。
+    var headerOk = (header.length === CSV_LEGACY_LEN || header.length === CSV_HEADER.length) &&
       header.every(function (c, idx) { return c === CSV_HEADER[idx]; });
+    var colCount = header.length;
 
     if (!headerOk) {
       showImportResult("error",
@@ -1002,7 +1029,7 @@
     var invalid = 0;
 
     dataRows.forEach(function (row, idx) {
-      if (row.length !== CSV_HEADER.length) {
+      if (row.length !== colCount) {
         invalid++;
         return;
       }
@@ -1023,6 +1050,10 @@
         createdAt: Date.now()
       };
       CSV_FIELDS.forEach(function (fieldName, colIdx) {
+        if (colIdx >= row.length) {
+          record[fieldName] = ""; // 旧形式CSVには朝血圧列が無い
+          return;
+        }
         record[fieldName] = colIdx === 0 ? date : String(row[colIdx]).trim();
       });
 
@@ -1128,9 +1159,11 @@
 
   /* ===== AIひとことコメント ===== */
   function formatRecordDetail(r) {
-    var bp = (r.bpHigh || r.bpLow)
-      ? (r.bpHigh || "?") + " / " + (r.bpLow || "?") + " mm"
-      : "(記録なし)";
+    var bpMorning = (r.bpMorningHigh || r.bpMorningLow)
+      ? "朝 " + (r.bpMorningHigh || "?") + " / " + (r.bpMorningLow || "?") + " mm" : null;
+    var bpNight = (r.bpHigh || r.bpLow)
+      ? "寝る前 " + (r.bpHigh || "?") + " / " + (r.bpLow || "?") + " mm" : null;
+    var bp = [bpMorning, bpNight].filter(function (x) { return x; }).join("、") || "(記録なし)";
     return [
       "日付: " + r.date,
       "調子: " + (r.condition || "") + " (0〜10)",
@@ -1452,11 +1485,13 @@
       }));
     });
 
-    // 血圧（上・下の2本）
+    // 血圧（朝・寝る前 × 上・下）
     var bpCard = makeCard("血圧 (mm)");
-    var highData = records.map(function (r) { return toNumberOrNull(r.bpHigh); });
-    var lowData = records.map(function (r) { return toNumberOrNull(r.bpLow); });
-    var hasBp = highData.concat(lowData).some(function (v) { return v !== null; });
+    var nightHigh = records.map(function (r) { return toNumberOrNull(r.bpHigh); });
+    var nightLow = records.map(function (r) { return toNumberOrNull(r.bpLow); });
+    var morningHigh = records.map(function (r) { return toNumberOrNull(r.bpMorningHigh); });
+    var morningLow = records.map(function (r) { return toNumberOrNull(r.bpMorningLow); });
+    var hasBp = nightHigh.concat(nightLow, morningHigh, morningLow).some(function (v) { return v !== null; });
 
     if (!hasBp) {
       var note = document.createElement("div");
@@ -1480,16 +1515,32 @@
         labels: labels,
         datasets: [
           {
-            label: "上",
-            data: highData,
+            label: "朝(上)",
+            data: morningHigh,
+            borderColor: "#e08a2e",
+            backgroundColor: "#e08a2e",
+            borderWidth: 2,
+            spanGaps: true
+          },
+          {
+            label: "朝(下)",
+            data: morningLow,
+            borderColor: "#4a9d7f",
+            backgroundColor: "#4a9d7f",
+            borderWidth: 2,
+            spanGaps: true
+          },
+          {
+            label: "寝る前(上)",
+            data: nightHigh,
             borderColor: "#b3402a",
             backgroundColor: "#b3402a",
             borderWidth: 2,
             spanGaps: true
           },
           {
-            label: "下",
-            data: lowData,
+            label: "寝る前(下)",
+            data: nightLow,
             borderColor: "#3a6ea5",
             backgroundColor: "#3a6ea5",
             borderWidth: 2,
@@ -1673,6 +1724,8 @@
       exercise: document.getElementById("exercise").value.trim(),
       bpHigh: document.getElementById("bp-high").value.trim(),
       bpLow: document.getElementById("bp-low").value.trim(),
+      bpMorningHigh: document.getElementById("bp-morning-high").value.trim(),
+      bpMorningLow: document.getElementById("bp-morning-low").value.trim(),
       other: document.getElementById("other").value.trim()
     };
 
@@ -1686,6 +1739,8 @@
     document.getElementById("exercise").value = "";
     document.getElementById("bp-high").value = "";
     document.getElementById("bp-low").value = "";
+    document.getElementById("bp-morning-high").value = "";
+    document.getElementById("bp-morning-low").value = "";
     document.getElementById("other").value = "";
     resetSteppers();
     document.getElementById("date").value = todayString();
