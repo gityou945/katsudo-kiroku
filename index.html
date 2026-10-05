@@ -631,6 +631,16 @@
     </div>
 
     <div class="field">
+      <label>痛み <span class="hint">(0:無痛 〜 10:激痛)</span></label>
+      <div class="stepper" data-min="0" data-max="10">
+        <button type="button" class="minus" aria-label="減らす">−</button>
+        <span class="value" id="pain-val">0</span>
+        <button type="button" class="plus" aria-label="増やす">＋</button>
+        <input type="hidden" id="pain" value="0">
+      </div>
+    </div>
+
+    <div class="field">
       <label>睡眠 <span class="hint">(0:眠れなかった 〜 5:よく眠れた)</span></label>
       <div class="stepper" data-min="0" data-max="5">
         <button type="button" class="minus" aria-label="減らす">−</button>
@@ -788,7 +798,7 @@
   }
 
   function resetSteppers() {
-    var defaults = { condition: 5, sleep: 3, activity: 5, bowel: 2 };
+    var defaults = { condition: 5, pain: 0, sleep: 3, activity: 5, bowel: 2 };
     Object.keys(defaults).forEach(function (id) {
       var input = document.getElementById(id);
       input.value = defaults[id];
@@ -836,6 +846,7 @@
       var bp = bpParts.length ? bpParts.join(" ／ ") + " mm" : "";
       var rows = "";
       rows += '<dt>調子</dt><dd>' + escapeHtml(r.condition) + '</dd>';
+      if (r.pain !== undefined) rows += '<dt>痛み</dt><dd>' + escapeHtml(r.pain) + '</dd>';
       rows += '<dt>睡眠</dt><dd>' + escapeHtml(r.sleep) + '</dd>';
       rows += '<dt>活動量</dt><dd>' + escapeHtml(r.activity) + '</dd>';
       rows += '<dt>便通</dt><dd>' + escapeHtml(r.bowel) + '</dd>';
@@ -868,10 +879,11 @@
 
   /* ===== CSVエクスポート ===== */
   // エクスポート・インポート共通の列構成（内部フィールド名との対応順）
-  // 「血圧上/血圧下」は寝る前の値。朝の血圧列は後方互換のため末尾に追加した。
-  var CSV_HEADER = ["日付", "調子", "睡眠", "活動量", "便通", "ポジティブ一言", "運動", "血圧上", "血圧下", "その他", "朝血圧上", "朝血圧下"];
-  var CSV_FIELDS = ["date", "condition", "sleep", "activity", "bowel", "positive", "exercise", "bpHigh", "bpLow", "other", "bpMorningHigh", "bpMorningLow"];
-  var CSV_LEGACY_LEN = 10; // 朝血圧列が無い旧形式の列数
+  // 「血圧上/血圧下」は寝る前の値。新しい項目は後方互換のため常に末尾に追加する。
+  var CSV_HEADER = ["日付", "調子", "睡眠", "活動量", "便通", "ポジティブ一言", "運動", "血圧上", "血圧下", "その他", "朝血圧上", "朝血圧下", "痛み"];
+  var CSV_FIELDS = ["date", "condition", "sleep", "activity", "bowel", "positive", "exercise", "bpHigh", "bpLow", "other", "bpMorningHigh", "bpMorningLow", "pain"];
+  // これまでの列数の変遷(旧形式のCSVも読み込めるよう、すべて受け付ける)：10=初期 / 12=+朝血圧 / 13=+痛み
+  var CSV_KNOWN_LENGTHS = [10, 12, CSV_HEADER.length];
 
   function csvField(v) {
     var s = v === undefined || v === null ? "" : String(v);
@@ -893,7 +905,7 @@
       var row = [
         r.date, r.condition, r.sleep, r.activity, r.bowel,
         r.positive, r.exercise, r.bpHigh, r.bpLow, r.other,
-        r.bpMorningHigh, r.bpMorningLow
+        r.bpMorningHigh, r.bpMorningLow, r.pain
       ];
       lines.push(row.map(csvField).join(","));
     });
@@ -1007,8 +1019,8 @@
     }
 
     var header = rows[0].map(function (c) { return String(c).trim(); });
-    // 旧形式(朝血圧列なし)と新形式の両方を受け付ける。CSV_HEADER の先頭からの前方一致で判定。
-    var headerOk = (header.length === CSV_LEGACY_LEN || header.length === CSV_HEADER.length) &&
+    // これまでのどの列数のCSVも受け付ける。CSV_HEADER の先頭からの前方一致で判定。
+    var headerOk = CSV_KNOWN_LENGTHS.indexOf(header.length) !== -1 &&
       header.every(function (c, idx) { return c === CSV_HEADER[idx]; });
     var colCount = header.length;
 
@@ -1167,6 +1179,7 @@
     return [
       "日付: " + r.date,
       "調子: " + (r.condition || "") + " (0〜10)",
+      "痛み: " + (r.pain !== undefined ? r.pain + " (0〜10、無痛〜激痛)" : "(記録なし)"),
       "睡眠: " + (r.sleep || "") + " (0〜5)",
       "活動量: " + (r.activity || "") + " (0〜10)",
       "便通: " + (r.bowel || "") + " (0〜5)",
@@ -1180,6 +1193,7 @@
   function formatRecordOneLine(r) {
     var line = shortDate(r.date) +
       " 調子" + (r.condition || "?") +
+      " 痛み" + (r.pain !== undefined ? r.pain : "?") +
       " 睡眠" + (r.sleep || "?") +
       " 活動" + (r.activity || "?") +
       " 便通" + (r.bowel || "?");
@@ -1213,7 +1227,7 @@
       recentLines.length ? recentLines.join("\n") : "(今日が最初の記録です)",
       "",
       "今日の記録に対して、敬語(丁寧語)を使い、12〜16文程度・2段落程度で日本語のコメントをください。",
-      "1段落目は今日の記録そのものへの言及(ポジティブ一言や運動、体調・睡眠・便通・血圧などの具体的な内容)と労い・共感を中心に、2段落目は直近の記録の推移から気づいたこと(良い流れ、変化、続けられていること)と、明日への穏やかな一言で締めてください。段落の間は空行で区切ってください。",
+      "1段落目は今日の記録そのものへの言及(ポジティブ一言や運動、体調・痛み・睡眠・便通・血圧などの具体的な内容)と労い・共感を中心に、2段落目は直近の記録の推移から気づいたこと(良い流れ、変化、続けられていること)と、明日への穏やかな一言で締めてください。痛みが強い・悪化している場合は、医療機関への受診を軽く促す一言も添えてください。段落の間は空行で区切ってください。",
       "数値をそのまま読み上げるのではなく、具体的な内容に自然に触れながら、話しかけるような文章にしてください。",
       "",
       "以下は文体・長さ・構成(今日の内容への言及と労い→推移からの気づき→明日への一言、という流れ)の参考例です。",
@@ -1344,6 +1358,7 @@
   var currentPeriod = "3m";
   var LINE_CHARTS = [
     { key: "condition", label: "調子", min: 0, max: 10, step: 2, color: "#2f6f4f" },
+    { key: "pain", label: "痛み", min: 0, max: 10, step: 2, color: "#c0392b" },
     { key: "sleep", label: "睡眠", min: 0, max: 5, step: 1, color: "#3a6ea5" },
     { key: "activity", label: "活動量", min: 0, max: 10, step: 2, color: "#b5651d" },
     { key: "bowel", label: "便通", min: 0, max: 5, step: 1, color: "#8a5a83" }
@@ -1717,6 +1732,7 @@
       createdAt: Date.now(),
       date: date,
       condition: document.getElementById("condition").value,
+      pain: document.getElementById("pain").value,
       sleep: document.getElementById("sleep").value,
       activity: document.getElementById("activity").value,
       bowel: document.getElementById("bowel").value,
