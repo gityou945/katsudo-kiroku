@@ -154,13 +154,16 @@
     min-width: 70px;
   }
 
-  .bp-row {
+  /* 数値入力＋単位を横並びにする行（血圧・体重で共用） */
+  .bp-row,
+  .num-row {
     display: flex;
     align-items: center;
     gap: 10px;
   }
 
-  .bp-row input {
+  .bp-row input,
+  .num-row input {
     text-align: center;
   }
 
@@ -169,7 +172,8 @@
     font-weight: 700;
   }
 
-  .bp-row .unit {
+  .bp-row .unit,
+  .num-row .unit {
     font-size: 19px;
     white-space: nowrap;
   }
@@ -699,6 +703,14 @@
     </div>
 
     <div class="field">
+      <label for="weight">体重 <span class="hint">(kg)</span></label>
+      <div class="num-row">
+        <input type="number" id="weight" inputmode="decimal" min="0" max="300" step="0.1" placeholder="例: 58.5">
+        <span class="unit">kg</span>
+      </div>
+    </div>
+
+    <div class="field">
       <label for="other">その他 / 環境・変化</label>
       <textarea id="other" name="other" maxlength="300" placeholder="例: 晴れていた、新しいことを始めた、模様替えをした"></textarea>
     </div>
@@ -851,6 +863,7 @@
       rows += '<dt>活動量</dt><dd>' + escapeHtml(r.activity) + '</dd>';
       rows += '<dt>便通</dt><dd>' + escapeHtml(r.bowel) + '</dd>';
       if (bp) rows += '<dt>血圧</dt><dd>' + bp + '</dd>';
+      if (r.weight) rows += '<dt>体重</dt><dd>' + escapeHtml(r.weight) + ' kg</dd>';
       if (r.positive) rows += '<dd class="free">😊 ' + escapeHtml(r.positive) + '</dd>';
       if (r.exercise) rows += '<dd class="free">🏃 ' + escapeHtml(r.exercise) + '</dd>';
       if (r.other) rows += '<dd class="free">📝 ' + escapeHtml(r.other) + '</dd>';
@@ -880,10 +893,11 @@
   /* ===== CSVエクスポート ===== */
   // エクスポート・インポート共通の列構成（内部フィールド名との対応順）
   // 「血圧上/血圧下」は寝る前の値。新しい項目は後方互換のため常に末尾に追加する。
-  var CSV_HEADER = ["日付", "調子", "睡眠", "活動量", "便通", "ポジティブ一言", "運動", "血圧上", "血圧下", "その他", "朝血圧上", "朝血圧下", "腰の痛み"];
-  var CSV_FIELDS = ["date", "condition", "sleep", "activity", "bowel", "positive", "exercise", "bpHigh", "bpLow", "other", "bpMorningHigh", "bpMorningLow", "pain"];
-  // これまでの列数の変遷(旧形式のCSVも読み込めるよう、すべて受け付ける)：10=初期 / 12=+朝血圧 / 13=+腰の痛み
-  var CSV_KNOWN_LENGTHS = [10, 12, CSV_HEADER.length];
+  var CSV_HEADER = ["日付", "調子", "睡眠", "活動量", "便通", "ポジティブ一言", "運動", "血圧上", "血圧下", "その他", "朝血圧上", "朝血圧下", "腰の痛み", "体重"];
+  var CSV_FIELDS = ["date", "condition", "sleep", "activity", "bowel", "positive", "exercise", "bpHigh", "bpLow", "other", "bpMorningHigh", "bpMorningLow", "pain", "weight"];
+  // これまでの列数の変遷(旧形式のCSVも読み込めるよう、すべて受け付ける)：
+  // 10=初期 / 12=+朝血圧 / 13=+腰の痛み / 14=+体重
+  var CSV_KNOWN_LENGTHS = [10, 12, 13, CSV_HEADER.length];
   // 列の見出し文言が変わった箇所。旧CSVもインポートできるよう、列index単位で旧文言を許容する
   var CSV_HEADER_ALIASES = { 12: ["痛み"] }; // 13列目: 「痛み」→「腰の痛み」に改称(2026-10-05)
 
@@ -907,7 +921,7 @@
       var row = [
         r.date, r.condition, r.sleep, r.activity, r.bowel,
         r.positive, r.exercise, r.bpHigh, r.bpLow, r.other,
-        r.bpMorningHigh, r.bpMorningLow, r.pain
+        r.bpMorningHigh, r.bpMorningLow, r.pain, r.weight
       ];
       lines.push(row.map(csvField).join(","));
     });
@@ -1192,6 +1206,7 @@
       "ポジティブ一言: " + (r.positive || "(記録なし)"),
       "運動: " + (r.exercise || "(記録なし)"),
       "血圧: " + bp,
+      "体重: " + (r.weight ? r.weight + " kg" : "(記録なし)"),
       "その他: " + (r.other || "(記録なし)")
     ].join("\n");
   }
@@ -1233,7 +1248,7 @@
       recentLines.length ? recentLines.join("\n") : "(今日が最初の記録です)",
       "",
       "今日の記録に対して、敬語(丁寧語)を使い、12〜16文程度・2段落程度で日本語のコメントをください。",
-      "1段落目は今日の記録そのものへの言及(ポジティブ一言や運動、体調・腰の痛み・睡眠・便通・血圧などの具体的な内容)と労い・共感を中心に、2段落目は直近の記録の推移から気づいたこと(良い流れ、変化、続けられていること)と、明日への穏やかな一言で締めてください。腰の痛みが強い・悪化している場合は、医療機関への受診を軽く促す一言も添えてください。段落の間は空行で区切ってください。",
+      "1段落目は今日の記録そのものへの言及(ポジティブ一言や運動、体調・腰の痛み・睡眠・便通・血圧・体重などの具体的な内容)と労い・共感を中心に、2段落目は直近の記録の推移から気づいたこと(良い流れ、変化、続けられていること)と、明日への穏やかな一言で締めてください。腰の痛みが強い・悪化している場合は、医療機関への受診を軽く促す一言も添えてください。段落の間は空行で区切ってください。",
       "数値をそのまま読み上げるのではなく、具体的な内容に自然に触れながら、話しかけるような文章にしてください。",
       "",
       "以下は文体・長さ・構成(今日の内容への言及と労い→推移からの気づき→明日への一言、という流れ)の参考例です。",
@@ -1506,6 +1521,48 @@
       }));
     });
 
+    // 体重（値の幅が人によって違うため、縦軸は自動スケール）
+    var weightCard = makeCard("体重 (kg)");
+    var weightData = records.map(function (r) { return toNumberOrNull(r.weight); });
+
+    if (!weightData.some(function (v) { return v !== null; })) {
+      var wNote = document.createElement("div");
+      wNote.className = "chart-note";
+      wNote.textContent = "体重の記録がまだありません";
+      weightCard.appendChild(wNote);
+      area.appendChild(weightCard);
+    } else {
+      var wBox = document.createElement("div");
+      wBox.className = "chart-box";
+      var wCanvas = document.createElement("canvas");
+      wBox.appendChild(wCanvas);
+      weightCard.appendChild(wBox);
+      area.appendChild(weightCard);
+
+      chartInstances.push(new Chart(wCanvas, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: "体重",
+            data: weightData,
+            borderColor: "#6b7f3a",
+            backgroundColor: "#6b7f3a",
+            borderWidth: 2,
+            spanGaps: true
+          }]
+        },
+        options: (function () {
+          var o = baseOptions(undefined, undefined, undefined, false);
+          o.scales.y.min = undefined;
+          o.scales.y.max = undefined;
+          o.scales.y.ticks = { font: { size: 13 } };
+          o.scales.y.beginAtZero = false;
+          return o;
+        })()
+      }));
+    }
+
     // 血圧（朝・寝る前 × 上・下）
     var bpCard = makeCard("血圧 (mm)");
     var nightHigh = records.map(function (r) { return toNumberOrNull(r.bpHigh); });
@@ -1748,6 +1805,7 @@
       bpLow: document.getElementById("bp-low").value.trim(),
       bpMorningHigh: document.getElementById("bp-morning-high").value.trim(),
       bpMorningLow: document.getElementById("bp-morning-low").value.trim(),
+      weight: document.getElementById("weight").value.trim(),
       other: document.getElementById("other").value.trim()
     };
 
@@ -1763,6 +1821,7 @@
     document.getElementById("bp-low").value = "";
     document.getElementById("bp-morning-high").value = "";
     document.getElementById("bp-morning-low").value = "";
+    document.getElementById("weight").value = "";
     document.getElementById("other").value = "";
     resetSteppers();
     document.getElementById("date").value = todayString();
