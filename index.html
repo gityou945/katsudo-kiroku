@@ -357,6 +357,35 @@
     color: #fff;
   }
 
+  /* ===== 運動の選択ボタン（複数選択可） ===== */
+  .choice-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .choice-btn {
+    background: #fff;
+    color: var(--accent-dark);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .choice-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* 色だけに頼らず、選択中であることがはっきり分かるようにする */
+  .choice-btn.active::before {
+    content: "✓ ";
+  }
+
   /* ===== 設定モーダル ===== */
   .modal-overlay {
     position: fixed;
@@ -680,8 +709,9 @@
     </div>
 
     <div class="field">
-      <label for="exercise">運動</label>
-      <input type="text" id="exercise" name="exercise" maxlength="120" placeholder="例: 散歩 20分">
+      <label for="exercise">運動 <span class="hint">(やったものを選ぶ・複数可)</span></label>
+      <div class="choice-grid" id="exercise-choices"></div>
+      <input type="text" id="exercise" name="exercise" maxlength="120" placeholder="その他 (例: 散歩 20分)">
     </div>
 
     <div class="field">
@@ -815,6 +845,51 @@
       var input = document.getElementById(id);
       input.value = defaults[id];
       document.getElementById(id + "-val").textContent = defaults[id];
+    });
+  }
+
+  /* ===== 運動の選択ボタン（複数選択可） ===== */
+  // ここに名前を足すと選択ボタンが増える。
+  // 選んだものと自由記入は「、」でつないだ1つの文字列として record.exercise に保存するので、
+  // 保存形式はこれまでと変わらない（CSVや過去データに影響しない）。
+  var EXERCISE_OPTIONS = [
+    "デッドバグ", "グルートブリッジ", "ウォーキング",
+    "ストレッチ", "スクワット", "ラジオ体操"
+  ];
+
+  function setupExerciseChoices() {
+    var grid = document.getElementById("exercise-choices");
+    EXERCISE_OPTIONS.forEach(function (name) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "choice-btn";
+      btn.textContent = name;
+      btn.setAttribute("aria-pressed", "false");
+      btn.addEventListener("click", function () {
+        var on = btn.classList.toggle("active");
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      grid.appendChild(btn);
+    });
+  }
+
+  function selectedExerciseButtons() {
+    return document.querySelectorAll("#exercise-choices .choice-btn.active");
+  }
+
+  // 選択ボタン＋自由記入をまとめて1つの文字列にする
+  function collectExercise() {
+    var parts = [];
+    selectedExerciseButtons().forEach(function (btn) { parts.push(btn.textContent); });
+    var free = document.getElementById("exercise").value.trim();
+    if (free) parts.push(free);
+    return parts.join("、");
+  }
+
+  function resetExerciseChoices() {
+    selectedExerciseButtons().forEach(function (btn) {
+      btn.classList.remove("active");
+      btn.setAttribute("aria-pressed", "false");
     });
   }
 
@@ -1800,7 +1875,7 @@
       activity: document.getElementById("activity").value,
       bowel: document.getElementById("bowel").value,
       positive: document.getElementById("positive").value.trim(),
-      exercise: document.getElementById("exercise").value.trim(),
+      exercise: collectExercise(),
       bpHigh: document.getElementById("bp-high").value.trim(),
       bpLow: document.getElementById("bp-low").value.trim(),
       bpMorningHigh: document.getElementById("bp-morning-high").value.trim(),
@@ -1817,6 +1892,7 @@
     // フォームを次の入力用に整える
     document.getElementById("positive").value = "";
     document.getElementById("exercise").value = "";
+    resetExerciseChoices();
     document.getElementById("bp-high").value = "";
     document.getElementById("bp-low").value = "";
     document.getElementById("bp-morning-high").value = "";
@@ -1857,6 +1933,7 @@
   /* ===== 初期化 ===== */
   document.getElementById("date").value = todayString();
   setupSteppers();
+  setupExerciseChoices();
   setupPeriodSwitch();
   setupSettingsModal();
   document.getElementById("record-form").addEventListener("submit", handleSubmit);
