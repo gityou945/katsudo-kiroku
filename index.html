@@ -372,6 +372,14 @@
     margin-bottom: 6px;
   }
 
+  /* 見出しの横に添える補足（例: ※毎日やって問題ない） */
+  .choice-group-note {
+    font-size: 14px;
+    font-weight: 400;
+    color: #55655b;
+    margin-left: 8px;
+  }
+
   .choice-grid {
     display: flex;
     flex-wrap: wrap;
@@ -874,7 +882,8 @@
     },
     {
       label: "ストレッチ",
-      items: ["ストレッチ", "足首回し&足指グーパー運動", "ハムストリングスストレッチ"]
+      note: "※毎日やって問題ない",
+      items: ["足首回し&足指グーパー運動", "ハムストリングスストレッチ", "腸腰筋ストレッチ", "4の字ストレッチ"]
     }
   ];
 
@@ -884,11 +893,17 @@
       var box = document.createElement("div");
       box.className = "choice-group";
       box.setAttribute("role", "group");
-      box.setAttribute("aria-label", group.label);
+      box.setAttribute("aria-label", group.label + (group.note ? " " + group.note : ""));
 
       var label = document.createElement("div");
       label.className = "choice-group-label";
       label.textContent = group.label;
+      if (group.note) {
+        var note = document.createElement("span");
+        note.className = "choice-group-note";
+        note.textContent = group.note;
+        label.appendChild(note);
+      }
       box.appendChild(label);
 
       var grid = document.createElement("div");
