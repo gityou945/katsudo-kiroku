@@ -358,11 +358,24 @@
   }
 
   /* ===== 運動の選択ボタン（複数選択可） ===== */
+  /* 「運動・筋トレ」と「ストレッチ」を見出し付きのまとまりとして区切る */
+  .choice-group {
+    border-left: 4px solid var(--border);
+    padding-left: 10px;
+    margin-bottom: 14px;
+  }
+
+  .choice-group-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-dark);
+    margin-bottom: 6px;
+  }
+
   .choice-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 10px;
   }
 
   .choice-btn {
@@ -710,7 +723,7 @@
 
     <div class="field">
       <label for="exercise">運動 <span class="hint">(やったものを選ぶ・複数可)</span></label>
-      <div class="choice-grid" id="exercise-choices"></div>
+      <div id="exercise-choices"></div>
       <input type="text" id="exercise" name="exercise" maxlength="120" placeholder="その他 (例: 散歩 20分)">
     </div>
 
@@ -849,30 +862,52 @@
   }
 
   /* ===== 運動の選択ボタン（複数選択可） ===== */
-  // ここに名前を足すと選択ボタンが増える。
+  // 「運動なのか、毎日やってよいストレッチなのか」が一目で分かるように、見出し付きの
+  // グループに分けて表示する。グループを足したい場合はこの配列に追加する。
   // 選んだものと自由記入は「、」でつないだ1つの文字列として record.exercise に保存するので、
   // 保存形式はこれまでと変わらない（CSVや過去データに影響しない）。
-  // 既存ボタンの位置が変わると押し間違いのもとになるので、追加は末尾に足していく
-  var EXERCISE_OPTIONS = [
-    "デッドバグ", "グルートブリッジ", "ウォーキング",
-    "ストレッチ", "スクワット", "ラジオ体操",
-    "足首回し&足指グーパー運動", "ハムストリングスストレッチ",
-    "自宅昇降運動"
+  // 既存ボタンの位置が変わると押し間違いのもとになるので、項目の追加はグループの末尾に足していく。
+  var EXERCISE_GROUPS = [
+    {
+      label: "運動・筋トレ",
+      items: ["デッドバグ", "グルートブリッジ", "ウォーキング", "スクワット", "ラジオ体操", "自宅昇降運動"]
+    },
+    {
+      label: "ストレッチ",
+      items: ["ストレッチ", "足首回し&足指グーパー運動", "ハムストリングスストレッチ"]
+    }
   ];
 
   function setupExerciseChoices() {
-    var grid = document.getElementById("exercise-choices");
-    EXERCISE_OPTIONS.forEach(function (name) {
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "choice-btn";
-      btn.textContent = name;
-      btn.setAttribute("aria-pressed", "false");
-      btn.addEventListener("click", function () {
-        var on = btn.classList.toggle("active");
-        btn.setAttribute("aria-pressed", on ? "true" : "false");
+    var container = document.getElementById("exercise-choices");
+    EXERCISE_GROUPS.forEach(function (group) {
+      var box = document.createElement("div");
+      box.className = "choice-group";
+      box.setAttribute("role", "group");
+      box.setAttribute("aria-label", group.label);
+
+      var label = document.createElement("div");
+      label.className = "choice-group-label";
+      label.textContent = group.label;
+      box.appendChild(label);
+
+      var grid = document.createElement("div");
+      grid.className = "choice-grid";
+      group.items.forEach(function (name) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "choice-btn";
+        btn.textContent = name;
+        btn.setAttribute("aria-pressed", "false");
+        btn.addEventListener("click", function () {
+          var on = btn.classList.toggle("active");
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+        });
+        grid.appendChild(btn);
       });
-      grid.appendChild(btn);
+
+      box.appendChild(grid);
+      container.appendChild(box);
     });
   }
 
